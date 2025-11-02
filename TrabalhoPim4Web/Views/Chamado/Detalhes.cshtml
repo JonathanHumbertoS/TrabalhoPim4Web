@@ -1,0 +1,51 @@
+﻿@model TrabalhoPim4Web.Models.Chamado
+
+@{
+    ViewData["Title"] = $"Detalhes do Chamado #{Model.Id}";
+    var statusAtual = Model.Status;
+}
+
+<h1>Detalhes do Chamado #@Model.Id</h1>
+<hr />
+
+@if (TempData["MensagemSucesso"] != null)
+{
+    <div class="alert alert-success">@TempData["MensagemSucesso"]</div>
+}
+@if (TempData["MensagemErro"] != null)
+{
+    <div class="alert alert-danger">@TempData["MensagemErro"]</div>
+}
+
+<div class="card mb-4">
+    <div class="card-header">
+        <strong>@Model.Titulo</strong>
+    </div>
+    <div class="card-body">
+        <p><strong>Status Atual:</strong> <span class="badge @(statusAtual == "Fechado" ? "text-bg-success" : (statusAtual == "Em Andamento" ? "text-bg-warning" : "text-bg-danger"))">@statusAtual</span></p>
+        <p><strong>Aberto em:</strong> @Model.DataAbertura.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Aberto por (ID):</strong> @Model.IdUsuario</p>
+        <hr />
+        <h5>Descrição</h5>
+        <p>@Model.Descricao</p>
+    </div>
+</div>
+
+<h3>Atualizar Status (Ação do Técnico)</h3>
+
+<form asp-controller="Chamado" asp-action="AtualizarStatus" method="post" class="row g-3">
+    <input type="hidden" name="id" value="@Model.Id" />
+
+    <div class="col-md-4">
+        <label for="novoStatus" class="form-label">Novo Status:</label>
+        <select name="novoStatus" class="form-select">
+            <option value="Aberto" selected="@(statusAtual == "Aberto")">Aberto</option>
+            <option value="Em Andamento" selected="@(statusAtual == "Em Andamento")">Em Andamento</option>
+            <option value="Fechado" selected="@(statusAtual == "Fechado")">Fechado</option>
+        </select>
+    </div>
+    <div class="col-md-8 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary">Salvar Status</button>
+        <a asp-controller="Chamado" asp-action="Listar" class="btn btn-secondary ms-2">Voltar para a Lista</a>
+    </div>
+</form>
