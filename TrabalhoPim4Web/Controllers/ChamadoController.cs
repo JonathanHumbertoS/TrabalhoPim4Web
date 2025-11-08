@@ -1,90 +1,73 @@
-﻿// No arquivo Controllers/ChamadoController.cs
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+// Necessário para ChamadoFormViewModel e Sugestao
 using TrabalhoPim4Web.DataAccess;
 using TrabalhoPim4Web.Models;
+using TrabalhoPim4Web.ViewModels;
 
-
-namespace TrabalhoPim4Web.Controllers
+namespace TrabalhoPim3Web.Controllers
 {
-    // Nota: Em um projeto real, você adicionaria [Authorize] aqui para proteger a rota
+    // Rota base do controller
     public class ChamadoController : Controller
     {
         private readonly ChamadoDAO _chamadoDAO;
 
-        // Injeção de Dependência do ChamadoDAO
+        // Injeção de Dependência
         public ChamadoController(ChamadoDAO chamadoDAO)
         {
             _chamadoDAO = chamadoDAO;
         }
 
-        // 1. Action para exibir a lista de chamados (GET: /Chamado/Listar)
+        // 1. LISTAR (Read - R do CRUD)
         [HttpGet]
         public IActionResult Listar()
         {
             List<Chamado> chamados = new List<Chamado>();
             try
             {
-                // Chama o DAO para buscar os dados no DB
                 chamados = _chamadoDAO.ListarTodos();
             }
             catch (Exception ex)
             {
-                // Trata erro de DB (mostra alerta no topo, mas permite renderizar a view)
-                TempData["ErroDB"] = "Erro ao carregar a lista de chamados. Verifique o banco de dados. Detalhe: " + ex.Message;
+                TempData["ErroDB"] = "Erro ao carregar a lista de chamados. Detalhe: " + ex.Message;
             }
-
-            // Retorna a lista de chamados para a View
             return View(chamados);
         }
 
-        // Dentro da classe ChamadoController.cs (Adicione após o método Listar)
-
-        // 2. Action para exibir o formulário de criação (GET: /Chamado/Criar)
+        // 2. CRIAR (Create - C do CRUD)
         [HttpGet]
         public IActionResult Criar()
         {
-            // Retorna a view com um ViewModel vazio
-            return View(new ViewModels.ChamadoFormViewModel());
+            return View(new ChamadoFormViewModel());
         }
 
-        // 3. Action para processar o formulário de criação (POST)
         [HttpPost]
-        public IActionResult Criar(ViewModels.ChamadoFormViewModel model)
+        public IActionResult Criar(ChamadoFormViewModel model)
         {
-            // Validação do modelo (requerimentos definidos no ChamadoFormViewModel.cs)
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Mapeia o ViewModel para o Model (DTO)
                     Chamado novoChamado = new Chamado
                     {
                         Titulo = model.Titulo,
                         Descricao = model.Descricao,
-                        // O status e data serão definidos no DAO.
                     };
-
                     _chamadoDAO.Inserir(novoChamado);
 
-                    // Sucesso: Redireciona para a lista
                     TempData["MensagemSucesso"] = "Chamado aberto com sucesso!";
                     return RedirectToAction("Listar");
                 }
                 catch (Exception ex)
                 {
-                    // Se o DAO lançar uma exceção de DB
                     ModelState.AddModelError(string.Empty, "Erro ao abrir o chamado. Tente novamente mais tarde.");
                     Console.WriteLine($"Erro ao criar chamado: {ex.Message}");
                 }
             }
-
-            // Se a validação falhar ou ocorrer erro de DB, retorna o formulário
             return View(model);
-        }// Dentro da classe ChamadoController.cs (Adicione após o método Criar)
+        }
 
-        // 4. Action para exibir os detalhes e o formulário de atualização de status (GET: /Chamado/Detalhes/{id})
+        // 3. DETALHES (Update - U do CRUD)
         [HttpGet]
         public IActionResult Detalhes(int id)
         {
@@ -97,19 +80,15 @@ namespace TrabalhoPim4Web.Controllers
                     TempData["MensagemErro"] = $"Chamado ID {id} não encontrado.";
                     return RedirectToAction("Listar");
                 }
-
-                // Retorna o objeto Chamado para a View
                 return View(chamado);
             }
             catch (Exception ex)
             {
                 TempData["MensagemErro"] = "Erro ao carregar detalhes do chamado. " + ex.Message;
-                Console.WriteLine($"Erro ao carregar detalhes: {ex.Message}");
                 return RedirectToAction("Listar");
             }
         }
 
-        // 5. Action para processar a atualização de status (POST)
         [HttpPost]
         public IActionResult AtualizarStatus(int id, string novoStatus)
         {
@@ -121,26 +100,87 @@ namespace TrabalhoPim4Web.Controllers
 
             try
             {
-                bool sucesso = _chamadoDAO.AtualizarStatus(id, novoStatus);
-
-                if (sucesso)
-                {
-                    TempData["MensagemSucesso"] = $"Status do chamado ID {id} atualizado para '{novoStatus}'.";
-                }
-                else
-                {
-                    TempData["MensagemErro"] = $"Não foi possível atualizar o status do chamado ID {id}.";
-                }
-
-                // Redireciona de volta para a tela de detalhes ou lista
+                _chamadoDAO.AtualizarStatus(id, novoStatus);
+                TempData["MensagemSucesso"] = $"Status do chamado ID {id} atualizado para '{novoStatus}'.";
                 return RedirectToAction("Listar");
             }
             catch (Exception ex)
             {
                 TempData["MensagemErro"] = "Erro ao processar a atualização de status. " + ex.Message;
-                Console.WriteLine($"Erro ao processar atualização de status: {ex.Message}");
                 return RedirectToAction("Listar");
             }
-        } // Os métodos Criar, Detalhes e Atualizar virão depois
+        }
+
+        
+        [HttpGet]
+        // Adiciona um mapeamento de rota explícito e em minúsculas
+        [Route("chamado/buscarsugestoesia")]
+        public IActionResult BuscarSugestoesIA(string termo)
+        {
+            // Base de conhecimento (Simulação da IA)
+            var baseDeConhecimento = new List<Sugestao>
+            {
+                new Sugestao {
+                    PalavraChave = "senha",
+                    Solucao = "Problema de SENHA: Tente usar a função 'Esqueceu a Senha' ou verifique se o Caps Lock está ativado."
+                },
+                new Sugestao {
+                    PalavraChave = "impressora",
+                    Solucao = "IMPRESSORA: Verifique se a impressora está ligada e conectada na rede. Tente reiniciar o spooler de impressão."
+                },
+                new Sugestao {
+                    PalavraChave = "acesso",
+                    Solucao = "ACESSO: Pode ser um problema de permissão. Limpe o cache do navegador e tente novamente."
+                },
+                
+                new Sugestao {
+                    PalavraChave = "monitor",
+                    Solucao = "MONITOR SEM IMAGEM: Verifique se o cabo de energia está ligado na tomada e se o cabo de vídeo (HDMI/VGA) está firme no computador."
+                },
+
+                 
+                new Sugestao {
+                    PalavraChave = "lento",
+                    Solucao = "COMPUTADOR LENTO: Tente fechar abas desnecessárias no navegador ou reiniciar o computador."
+                 },
+
+                new Sugestao {
+                    PalavraChave = "internet",
+                    Solucao = "FALHA DE INTERNET: 1. Verifique se o cabo de rede está conectado ao seu PC. 2. Tente reiniciar seu modem/roteador. 3. Verifique se a rede Wi-Fi está ativa."
+                },
+                new Sugestao {
+                    PalavraChave = "cache",
+                    Solucao = "NAVEGADOR LENTO/ERROS DE TELA: Tente limpar o cache e os cookies do seu navegador (Configurações > Privacidade e Segurança). Isso costuma resolver problemas de carregamento de páginas."
+                },
+
+                new Sugestao {
+                    PalavraChave = "travou",
+                    Solucao = "SISTEMA TRAVADO: Tente pressionar Ctrl + Alt + Del para abrir o Gerenciador de Tarefas e fechar o programa que não está respondendo. Se não funcionar, reinicie o PC."
+                },
+
+                new Sugestao {
+                    PalavraChave = "remoto",
+                    Solucao = "FALHA DE ACESSO REMOTO/VPN: Verifique se o seu software VPN está conectado e se a senha está correta. Se o problema persistir, o serviço de VPN pode estar inativo."
+                },
+                new Sugestao {
+                    PalavraChave = "email",
+                    Solucao = "E-MAIL NÃO ENVIA/RECEBE: Verifique se a sua conexão com a Internet está ativa e se as credenciais de login no seu cliente de e-mail (Outlook, Thunderbird, etc.) estão corretas."
+                }
+            };
+
+            if (string.IsNullOrWhiteSpace(termo))
+            {
+                return Json(new List<Sugestao>());
+            }
+
+            // Lógica de Filtragem
+            string termoLower = termo.ToLowerInvariant();
+            var sugestoes = baseDeConhecimento
+                .Where(s => termoLower.Contains(s.PalavraChave.ToLowerInvariant()))
+                .ToList();
+
+            // Retorna o resultado no formato JSON para o AJAX
+            return Json(sugestoes);
+        }
     }
 }

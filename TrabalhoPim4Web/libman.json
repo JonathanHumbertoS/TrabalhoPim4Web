@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  // Mude de "cdnjs" para "unpkg"
+  "defaultProvider": "unpkg",
+  "libraries": [
+    // 1. jQuery Principal 
+    {
+      "library": "jquery@3.7.1",
+      "destination": "wwwroot/lib/jquery/"
+    },
+    // 2. jQuery Validation (Esta era a biblioteca que falhava)
+    {
+      "library": "jquery-validation@1.19.5",
+      "destination": "wwwroot/lib/jquery-validation/"
+    },
+    // 3. Unobtrusive Validation 
+    {
+      "library": "jquery-validation-unobtrusive@3.2.12",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
+    }
+  ]
+}
