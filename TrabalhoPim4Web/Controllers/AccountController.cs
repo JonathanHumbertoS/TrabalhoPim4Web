@@ -12,6 +12,7 @@ namespace TrabalhoPim4Web.Controllers
     {
         private readonly UsuarioDAO _usuarioDAO;
 
+
         // Injeção de Dependência do UsuarioDAO (Configurado no Program.cs)
         public AccountController(UsuarioDAO usuarioDAO)
         {

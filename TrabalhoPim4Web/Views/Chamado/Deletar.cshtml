@@ -1,0 +1,37 @@
+﻿@model TrabalhoPim4Web.Models.Chamado
+
+@{
+    ViewData["Title"] = "Confirmar Exclusão";
+}
+
+<h1 class="text-danger">Atenção! Excluir Chamado</h1>
+<hr />
+
+<div class="card bg-light border-danger shadow-lg">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">Confirmação de Exclusão do Chamado ID: @Model.Id</h5>
+    </div>
+    <div class="card-body">
+        <p class="lead">Você tem certeza que deseja excluir o chamado com o título abaixo? Esta ação é **irreversível**.</p>
+
+        <dl class="row mt-4">
+            <dt class="col-sm-3">Título:</dt>
+            <dd class="col-sm-9">@Model.Titulo</dd>
+
+            <dt class="col-sm-3">Descrição:</dt>
+            <dd class="col-sm-9">@Model.Descricao</dd>
+
+            <dt class="col-sm-3">Status:</dt>
+            <dd class="col-sm-9">@Model.Status</dd>
+        </dl>
+
+        <form asp-action="Deletar" method="post" class="mt-4">
+            <input type="hidden" asp-for="Id" />
+
+            <button type="submit" class="btn btn-danger btn-lg">
+                <i class="fas fa-trash-alt"></i> Sim, Excluir Definitivamente
+            </button>
+            <a asp-action="Listar" class="btn btn-secondary btn-lg">Cancelar</a>
+        </form>
+    </div>
+</div>

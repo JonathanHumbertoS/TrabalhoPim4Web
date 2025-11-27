@@ -1,5 +1,6 @@
 ﻿// No arquivo DataAccess/ChamadoDAO.cs
 using Npgsql;
+using System; // Adicionado para usar Exception e DateTime.Now
 using System.Collections.Generic;
 using TrabalhoPim4Web.Models;
 
@@ -14,6 +15,7 @@ namespace TrabalhoPim4Web.DataAccess
             _connectionString = connectionString;
         }
 
+        // 1. LISTAR TODOS
         public List<Chamado> ListarTodos()
         {
             List<Chamado> chamados = new List<Chamado>();
@@ -51,10 +53,9 @@ namespace TrabalhoPim4Web.DataAccess
             return chamados;
         }
 
-        // Dentro da classe ChamadoDAO.cs
+        // 2. INSERIR (CRIAR)
         public void Inserir(Chamado chamado)
         {
-            // Lembre-se: PostgreSQL usa minúsculas por padrão, e o ID é SERIAL (auto-incremento)
             string sql = "INSERT INTO chamados (id_usuario, titulo, descricao, status, data_abertura) " +
                          "VALUES (@id_usuario, @titulo, @descricao, @status, @data_abertura)";
 
@@ -65,12 +66,11 @@ namespace TrabalhoPim4Web.DataAccess
                     conn.Open();
                     using (var cmd = new NpgsqlCommand(sql, conn))
                     {
-                        // Parâmetros de SQL Injection Prevention
-                        // NOTA: Para um projeto real, você precisaria de um sistema de sessão para obter o IdUsuario
-                        cmd.Parameters.AddWithValue("id_usuario", 1); // Usando ID 1 temporariamente (admin)
+                        // NOTA: Ajuste o IdUsuario se você tiver um sistema de sessão
+                        cmd.Parameters.AddWithValue("id_usuario", 1);
                         cmd.Parameters.AddWithValue("titulo", chamado.Titulo.Trim());
                         cmd.Parameters.AddWithValue("descricao", chamado.Descricao.Trim());
-                        cmd.Parameters.AddWithValue("status", "Aberto"); // Status inicial é sempre "Aberto"
+                        cmd.Parameters.AddWithValue("status", "Aberto");
                         cmd.Parameters.AddWithValue("data_abertura", DateTime.Now);
 
                         cmd.ExecuteNonQuery();
@@ -81,15 +81,10 @@ namespace TrabalhoPim4Web.DataAccess
             {
                 Console.WriteLine($"Erro ao inserir chamado: {ex.Message}");
                 throw new Exception("Erro ao acessar o banco de dados para inserir o chamado.", ex);
-         
-           
             }
-
-
         }
-        // Dentro da classe ChamadoDAO.cs
 
-        // 1. Método para buscar um chamado específico pelo ID
+        // 3. BUSCAR POR ID (Para Detalhes e Edição - GET)
         public Chamado? BuscarPorId(int id)
         {
             string sql = "SELECT id, id_usuario, titulo, descricao, status, data_abertura FROM chamados WHERE id = @id";
@@ -129,7 +124,40 @@ namespace TrabalhoPim4Web.DataAccess
             return chamado;
         }
 
-        // 2. Método para atualizar apenas o status (ação do técnico)
+        // 4. ATUALIZAR (EDITAR - POST) - O MÉTODO QUE FALTAVA!
+        public void Atualizar(Chamado chamado)
+        {
+            // Atualiza apenas os campos editáveis (Título e Descrição)
+            string sql = @"
+                UPDATE chamados SET
+                    titulo = @titulo,
+                    descricao = @descricao
+                WHERE id = @id";
+
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new NpgsqlCommand(sql, conn))
+                    {
+                        // Passando os novos valores e o ID para o WHERE
+                        cmd.Parameters.AddWithValue("titulo", chamado.Titulo.Trim());
+                        cmd.Parameters.AddWithValue("descricao", chamado.Descricao.Trim());
+                        cmd.Parameters.AddWithValue("id", chamado.Id); // Essencial para saber qual linha atualizar
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao atualizar chamado ID {chamado.Id}: {ex.Message}");
+                throw new Exception("Erro ao tentar atualizar o chamado no banco de dados.", ex);
+            }
+        }
+
+        // 5. ATUALIZAR STATUS
         public bool AtualizarStatus(int idChamado, string novoStatus)
         {
             string sql = "UPDATE chamados SET status = @novoStatus WHERE id = @id";
@@ -144,7 +172,6 @@ namespace TrabalhoPim4Web.DataAccess
                         cmd.Parameters.AddWithValue("novoStatus", novoStatus);
                         cmd.Parameters.AddWithValue("id", idChamado);
 
-                        // Retorna true se pelo menos uma linha foi afetada
                         return cmd.ExecuteNonQuery() > 0;
                     }
                 }
@@ -154,6 +181,43 @@ namespace TrabalhoPim4Web.DataAccess
                 Console.WriteLine($"Erro ao atualizar status do chamado ID {idChamado}: {ex.Message}");
                 throw new Exception("Erro ao atualizar o status do chamado no banco de dados.", ex);
             }
-        } // Os métodos Inserir, BuscarPorId, AtualizarStatus serão adicionados nos próximos passos.
+        }
+        // No arquivo DataAccess/ChamadoDAO.cs
+
+        // ... (seus outros métodos como ListarTodos, Inserir, BuscarPorId, Atualizar) ...
+
+        // 5. EXCLUIR (DELETAR)
+        public void Excluir(int id)
+        {
+            // Comando SQL DELETE
+            string sql = "DELETE FROM chamados WHERE id = @id";
+
+            try
+            {
+                using (var conn = new NpgsqlConnection(_connectionString))
+                {
+                    conn.Open();
+                    using (var cmd = new NpgsqlCommand(sql, conn))
+                    {
+                        // Parâmetro essencial para identificar qual chamado excluir
+                        cmd.Parameters.AddWithValue("id", id);
+
+                        int rowsAffected = cmd.ExecuteNonQuery();
+
+                        if (rowsAffected == 0)
+                        {
+                            // É bom verificar se a linha foi realmente deletada
+                            throw new Exception($"Chamado ID {id} não encontrado no banco de dados para exclusão.");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao excluir chamado ID {id}: {ex.Message}");
+                // Relança a exceção para que o Controller possa tratar
+                throw new Exception("Erro ao tentar excluir o chamado no banco de dados.", ex);
+            }
+        }
     }
 }

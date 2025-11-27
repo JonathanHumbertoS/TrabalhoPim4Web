@@ -1,0 +1,53 @@
+﻿@model TrabalhoPim4Web.ViewModels.ChamadoFormViewModel
+
+@{
+    ViewData["Title"] = "Editar Chamado";
+}
+
+<h1>Editar Chamado</h1>
+<hr />
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-lg mb-4">
+
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Editando Chamado ID: @Model.Id</h5>
+            </div>
+
+            <div class="card-body">
+
+                <form asp-controller="Chamado" asp-action="Editar" method="post">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <input type="hidden" asp-for="Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="Titulo" class="form-label"></label>
+                        <input asp-for="Titulo" class="form-control" />
+                        <span asp-validation-for="Titulo" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Descricao" class="form-label"></label>
+                        <textarea asp-for="Descricao" class="form-control" rows="5"></textarea>
+                        <span asp-validation-for="Descricao" class="text-danger"></span>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        <a asp-controller="Chamado" asp-action="Listar" class="btn btn-secondary">Cancelar</a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+}
