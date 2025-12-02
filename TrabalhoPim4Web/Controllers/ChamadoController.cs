@@ -6,7 +6,7 @@ using TrabalhoPim4Web.DataAccess;
 using TrabalhoPim4Web.Models;
 using TrabalhoPim4Web.ViewModels;
 
-namespace TrabalhoPim3Web.Controllers
+namespace TrabalhoPim4Web.Controllers
 {
     public class ChamadoController : Controller
     {
@@ -252,6 +252,39 @@ namespace TrabalhoPim3Web.Controllers
                 .ToList();
 
             return Json(sugestoes);
+        }
+
+        // Seu endpoint de API para o Mobile
+        [HttpPost]
+        [Route("api/chamados/abrir")]
+        public IActionResult AbrirChamadoAPI([FromBody] ChamadoFormViewModel model)
+        {
+            if (model == null || ModelState.IsValid == false)
+            {
+                // Retorna 400 Bad Request se os dados estiverem incompletos
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                Chamado novoChamado = new Chamado
+                {
+                    IdUsuario = 1, // ⚠️ Ajuste este ID para vir do login no App depois
+                    Titulo = model.Titulo,
+                    Descricao = model.Descricao,
+                    DataAbertura = DateTime.Now,
+                    Status = "Aberto"
+                };
+                _chamadoDAO.Inserir(novoChamado);
+
+                // Retorna 200 OK
+                return Ok(new { success = true, id = novoChamado.Id, mensagem = "Chamado aberto com sucesso!" });
+            }
+            catch (Exception ex)
+            {
+                // Retorna 500 Internal Server Error
+                return StatusCode(500, new { success = false, mensagem = "Erro interno ao processar o chamado: " + ex.Message });
+            }
         }
     }
 }

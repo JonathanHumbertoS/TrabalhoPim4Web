@@ -1,0 +1,18 @@
+<Shell
+    x:Class="PIM4Mobile.AppShell" 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    
+    xmlns:views="clr-namespace:PIM4Mobile.Views" 
+    
+    Shell.FlyoutBehavior="Disabled"
+    Title="PIM4Mobile">
+
+    <ShellContent
+        Title="Novo Chamado"
+        
+        ContentTemplate="{DataTemplate views:NovoChamadoPage}" 
+        
+        Route="NovoChamadoPage" />
+
+</Shell>

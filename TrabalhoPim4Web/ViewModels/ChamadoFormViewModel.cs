@@ -6,6 +6,9 @@ namespace TrabalhoPim4Web.ViewModels
     {
         public int Id { get; set; }
 
+        // Opcional: para identificar quem abriu
+        public int IdUsuario { get; set; }
+
         [Required(ErrorMessage = "O título é obrigatório.")]
         [StringLength(100, ErrorMessage = "Máximo de 100 caracteres.")]
         public string Titulo { get; set; } = string.Empty; 
@@ -14,5 +17,8 @@ namespace TrabalhoPim4Web.ViewModels
         public string Descricao { get; set; } = string.Empty;
 
         public string Status { get; set; } = string.Empty;// Usado na tela de detalhes
+
+        // Opcional: Se Categoria for um campo
+        public string Categoria { get; set; } = string.Empty;
     }
 }
